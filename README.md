@@ -39,11 +39,17 @@
 ### 1. 依存パッケージ
 
 ```bash
+# ネットワーク・スクリーンキャスト
 sudo pacman -S networkmanager wpa_supplicant \
-               pipewire wireplumber xdg-desktop-portal xdg-desktop-portal-kde \
-               gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad \
-               gst-plugins-ugly gst-plugin-pipewire gst-libav x264 \
-               meson ninja gcc pkg-config glib2 dotnet-sdk
+               pipewire wireplumber xdg-desktop-portal xdg-desktop-portal-kde
+
+# GStreamer (gst-rtsp-server はデーモンのビルドに必須)
+sudo pacman -S gstreamer gst-plugins-base gst-plugins-good gst-plugins-bad \
+               gst-plugins-ugly gst-plugin-pipewire gst-rtsp-server gst-libav x264
+
+# デーモンのビルド依存 + .NET SDK
+sudo pacman -S meson ninja gcc pkg-config glib2 \
+               gtk4 libadwaita libportal-gtk4 libpulse dotnet-sdk
 ```
 
 ### 2. デーモンのビルド（解像度パッチ付き）
