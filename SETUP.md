@@ -218,7 +218,7 @@ systemctl --user status gnome-network-displays-daemon
 dotnet publish -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true
 ```
 
-`bin/Release/net8.0/linux-x64/publish/MiraQt` に単一バイナリが生成されます。このファイルだけコピーすれば動きます。
+`bin/Release/net10.0/linux-x64/publish/MiraQt` に単一バイナリが生成されます。このファイルだけコピーすれば動きます。
 
 ---
 
