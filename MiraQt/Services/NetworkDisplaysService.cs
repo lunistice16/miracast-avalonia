@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MiraQt.DBus;
 using MiraQt.Models;
+using System.Diagnostics;
 using Tmds.DBus;
 
 namespace MiraQt.Services;
@@ -32,20 +33,73 @@ public sealed class NetworkDisplaysService : INetworkDisplaysService
 
     public async Task ConnectAsync()
     {
+        int retries = 5;
+        Exception? lastException = null;
+
+        while (retries > 0)
+        {
+            try
+            {
+                _connection = Connection.Session;
+                _proxy = _connection.CreateProxy<INetworkDisplaysManager>(BusName, ObjectPath);
+
+                // This will fail if the daemon isn't running yet.
+                _propertyWatcher = await _proxy.WatchPropertiesAsync(OnPropertiesChanged);
+                
+                // Push the initial state.
+                await RefreshAsync();
+                return; // Successfully connected!
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                _proxy = null;
+                _propertyWatcher?.Dispose();
+                _propertyWatcher = null;
+                
+                if (retries == 5)
+                {
+                    // First failure: Try to launch the daemon automatically
+                    EnsureDaemonRunning();
+                }
+
+                await Task.Delay(1000); // Wait 1s and retry
+                retries--;
+            }
+        }
+
+        ConnectionLost?.Invoke($"Could not connect to daemon after multiple attempts: {lastException?.Message}");
+    }
+
+    private void EnsureDaemonRunning()
+    {
         try
         {
-            _connection = Connection.Session;
-            _proxy = _connection.CreateProxy<INetworkDisplaysManager>(BusName, ObjectPath);
+            // List of possible daemon locations, prioritizing the manually built one.
+            var paths = new[] 
+            {
+                "/usr/local/libexec/gnome-network-displays-daemon",
+                "/usr/libexec/gnome-network-displays-daemon",
+                "/usr/bin/gnome-network-displays-daemon"
+            };
 
-            _propertyWatcher = await _proxy.WatchPropertiesAsync(OnPropertiesChanged);
+            string? validPath = paths.FirstOrDefault(System.IO.File.Exists);
 
-            // Push the initial state.
-            await RefreshAsync();
+            if (validPath is not null)
+            {
+                Console.WriteLine($"[MiraQt] Spawning daemon: {validPath}");
+                var psi = new ProcessStartInfo
+                {
+                    FileName = validPath,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                Process.Start(psi);
+            }
         }
         catch (Exception ex)
         {
-            ConnectionLost?.Invoke($"Could not connect to daemon: {ex.Message}");
-            throw;
+            Console.WriteLine($"[MiraQt] Failed to spawn daemon: {ex.Message}");
         }
     }
 
@@ -67,6 +121,21 @@ public sealed class NetworkDisplaysService : INetworkDisplaysService
     public async Task<string?> StartStreamAsync(string sinkUuid)
     {
         if (_proxy is null) return null;
+
+        // Automatically clean up any crashed stream units to prevent UnitExists errors.
+        try
+        {
+            var psi = new ProcessStartInfo
+            {
+                FileName = "systemctl",
+                Arguments = "--user reset-failed",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            Process.Start(psi)?.WaitForExit();
+        }
+        catch { }
+
         return await _proxy.StartStreamAsync(sinkUuid);
     }
 

@@ -1,0 +1,12 @@
+--- src/nd-wfd-p2p-provider.c	2024-01-01 00:00:00.000000000 +0000
++++ src/nd-wfd-p2p-provider.c	2024-01-01 00:00:00.000000000 +0000
+@@ -193,7 +193,7 @@
+   NdWFDP2PProvider *provider = ND_WFD_P2P_PROVIDER (user_data);
+ 
+-  g_debug ("WFDP2PProvider: Restarting P2P discovery");
+-  nm_device_wifi_p2p_start_find (NM_DEVICE_WIFI_P2P (provider->nm_device), NULL, NULL, log_start_find_error, NULL);
++  g_debug ("WFDP2PProvider: Suppressing periodic P2P discovery to prevent Intel AX200 dropouts");
++  // nm_device_wifi_p2p_start_find (NM_DEVICE_WIFI_P2P (provider->nm_device), NULL, NULL, log_start_find_error, NULL);
+ 
+   return G_SOURCE_CONTINUE;
+ }
