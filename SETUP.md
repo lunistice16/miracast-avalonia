@@ -141,7 +141,7 @@ dotnet build
 ### ターミナル 1: デーモンを起動
 
 ```bash
-gnome-network-displays-daemon
+/usr/local/libexec/gnome-network-displays-daemon
 ```
 
 ログが流れ始めます。エラーなく起動すれば OK。
