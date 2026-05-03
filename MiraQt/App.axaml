@@ -1,0 +1,35 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MiraQt.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- KDE Breeze Dark inspired palette -->
+            <Color x:Key="BrandAccent">#3DAEE9</Color>
+            <Color x:Key="BrandAccentHover">#5DBEF1</Color>
+            <Color x:Key="SurfaceBg">#232629</Color>
+            <Color x:Key="SurfaceCard">#2A2E32</Color>
+            <Color x:Key="SurfaceBorder">#3A3F44</Color>
+            <Color x:Key="TextPrimary">#EFF0F1</Color>
+            <Color x:Key="TextMuted">#7F8C8D</Color>
+            <Color x:Key="StateOk">#27AE60</Color>
+            <Color x:Key="StateWarn">#F39C12</Color>
+            <Color x:Key="StateError">#DA4453</Color>
+
+            <SolidColorBrush x:Key="BrandAccentBrush" Color="{StaticResource BrandAccent}" />
+            <SolidColorBrush x:Key="BrandAccentHoverBrush" Color="{StaticResource BrandAccentHover}" />
+            <SolidColorBrush x:Key="SurfaceBgBrush" Color="{StaticResource SurfaceBg}" />
+            <SolidColorBrush x:Key="SurfaceCardBrush" Color="{StaticResource SurfaceCard}" />
+            <SolidColorBrush x:Key="SurfaceBorderBrush" Color="{StaticResource SurfaceBorder}" />
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}" />
+            <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMuted}" />
+            <SolidColorBrush x:Key="StateOkBrush" Color="{StaticResource StateOk}" />
+            <SolidColorBrush x:Key="StateWarnBrush" Color="{StaticResource StateWarn}" />
+            <SolidColorBrush x:Key="StateErrorBrush" Color="{StaticResource StateError}" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

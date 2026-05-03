@@ -1,0 +1,69 @@
+Subject: [PATCH] wfd: pick the highest negotiated resolution
+
+The original code in nd-client.c set up the negotiated resolution list
+inside an `#if 0` block, so the daemon always fell back to a hardcoded
+1920x1080@30. The codec's resolution table already includes 4K entries
+(see src/wfd/wfd-video-codec.c — CEA includes 3840x2160@60 and
+4096x2160@60), so simply enabling the proper selection path lifts the
+cap without touching the protocol negotiation.
+
+The `if (codec->native)` short-circuit is intentionally NOT re-enabled,
+because the upstream comment notes that several real devices report
+garbage native resolutions.
+
+---
+ src/wfd/wfd-client.c | 22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/src/wfd/wfd-client.c b/src/wfd/wfd-client.c
+--- a/src/wfd/wfd-client.c
++++ b/src/wfd/wfd-client.c
+@@ -138,30 +138,26 @@ wfd_client_select_codec_and_resolution (WfdClient *self, WfdVideoCodecProfile pr
+   else
+     g_warning ("No codec/resolution could be found, falling back to defaults!");
+ 
+-#if 0
+-  /* The native resolution reported by some devices is just useless */
+-  if (codec->native)
+-    self->params->selected_resolution = wfd_resolution_copy (codec->native);
+-  else
++  /* MiraQt: pick the highest resolution the sink advertised, instead of the
++   * upstream behavior of always falling back to FullHD@30. The native field
++   * is intentionally ignored — several real devices report garbage there. */
++  if (codec)
+     {
+-      /* Find a good resolution. */
+       g_autoptr(GList) resolutions = NULL;
+       GList *last;
+ 
+       resolutions = wfd_video_codec_get_resolutions (codec);
+       resolutions = g_list_sort (resolutions, compare_resolutions);
+       last = g_list_last (resolutions);
+       if (last)
+         self->params->selected_resolution = wfd_resolution_copy ((WfdResolution *) last->data);
+-      else
+-        {
+-#endif
+-  /* Create a standard full HD resolution if everything fails. */
+-  g_warning ("WfdClient: No resolution found, falling back to standard FullHD resolution.");
+-  self->params->selected_resolution = wfd_resolution_new ();
+-  self->params->selected_resolution->width = 1920;
+-  self->params->selected_resolution->height = 1080;
+-  self->params->selected_resolution->refresh_rate = 30;
+-  self->params->selected_resolution->interlaced = FALSE;
+-#if 0
+-}
+-}
+-#endif
++    }
++
++  if (!self->params->selected_resolution)
++    {
++      g_warning ("WfdClient: No resolution found, falling back to standard FullHD resolution.");
++      self->params->selected_resolution = wfd_resolution_new ();
++      self->params->selected_resolution->width = 1920;
++      self->params->selected_resolution->height = 1080;
++      self->params->selected_resolution->refresh_rate = 30;
++      self->params->selected_resolution->interlaced = FALSE;
++    }
+   g_debug ("selected resolution %i, %i @%i", self->params->selected_resolution->width, self->params->selected_resolution->height, self->params->selected_resolution->refresh_rate);
