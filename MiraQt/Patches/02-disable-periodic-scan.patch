@@ -10,3 +10,11 @@
  
    return G_SOURCE_CONTINUE;
  }
+@@ -202,7 +202,7 @@
+ discovery_start_stop (NdWFDP2PProvider *provider, NMDeviceState state)
+ {
+-  if (provider->discover && state > NM_DEVICE_STATE_UNAVAILABLE)
++  if (provider->discover && state == 30)
+     {
+       g_debug ("WFDP2PProvider: Starting P2P discovery.");
+       nm_device_wifi_p2p_start_find (NM_DEVICE_WIFI_P2P (provider->nm_device), NULL, NULL, log_start_find_error, NULL);
